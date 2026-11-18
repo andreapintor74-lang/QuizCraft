@@ -829,9 +829,9 @@ Prima di rispondere controlla internamente coerenza di contenuti, soluzioni, con
       <div id="image-list" class="image-list" aria-label="Anteprime delle immagini selezionate"></div>
       <p id="image-status" class="image-status" role="status">Nessuna immagine selezionata.</p>
       <div class="gemini-key-field">
-        <label for="gemini-api-key">API key Gemini (solo per uso locale)</label>
+        <label for="gemini-api-key">API key Gemini personale</label>
         <input id="gemini-api-key" type="password" autocomplete="off" spellcheck="false" aria-describedby="gemini-key-note">
-        <p id="gemini-key-note">Con “Salva progetto” la chiave viene conservata in locale nel browser senza cifratura. Chi accede al tuo profilo browser potrebbe leggerla. Per l’uso locale viene inviata al server locale e poi a Gemini; con la Web App Apps Script non serve inserirla.</p>
+        <p id="gemini-key-note">La chiave viene usata solo per le richieste correnti e non viene salvata dal backend. Non viene inclusa nei progetti su GitHub Pages. Nell’uso locale, “Salva progetto” può conservarla senza cifratura nel browser.</p>
       </div>
       <div class="project-actions">
         <button id="save-project" class="secondary-button" type="button">Salva progetto nel browser</button>
@@ -1013,7 +1013,7 @@ Prima di rispondere controlla internamente coerenza di contenuti, soluzioni, con
     if (appsScriptAvailable) {
       document.querySelector("[data-help-link]").href = "?page=help";
     }
-    if (appsScriptAvailable || hybridBackendAvailable) {
+    if (appsScriptAvailable) {
       document.querySelector(".gemini-key-field").hidden = true;
     }
 
@@ -1820,7 +1820,10 @@ Prima di rispondere controlla internamente coerenza di contenuti, soluzioni, con
       scriptButton.title = scriptReady ? "" : "Clicca per sapere cosa manca.";
       const uploadButton = document.querySelector("#google-upload");
       uploadButton.disabled = !hasBoth || googleFormCreated || googleFormCreationInProgress;
-      uploadButton.title = hasBoth ? "" : "Genera entrambe le verifiche per creare il Google Form.";
+      uploadButton.disabled = uploadButton.disabled || hybridBackendAvailable;
+      uploadButton.title = hybridBackendAvailable
+        ? "Per creare il Form nel tuo account, usa “Copia script Google”."
+        : hasBoth ? "" : "Genera entrambe le verifiche per creare il Google Form.";
       floatingTools.classList.toggle("has-preview", hasAny);
     }
 
@@ -2088,7 +2091,7 @@ Prima di rispondere controlla internamente coerenza di contenuti, soluzioni, con
         generationGuide.hidden = false;
         return;
       }
-      if (localServerAvailable && !geminiApiKeyInput.value.trim()) {
+      if ((localServerAvailable || hybridBackendAvailable) && !geminiApiKeyInput.value.trim()) {
         topicSuggestionStatus.textContent = "Inserisci la tua API key Gemini nel campo qui sopra.";
         geminiApiKeyInput.focus();
         return;
@@ -2127,7 +2130,11 @@ Prima di rispondere controlla internamente coerenza di contenuti, soluzioni, con
               .suggestTopics(images, requestedCount);
           });
         } else {
-          result = await callAppsScriptBackend("suggestTopics", { images, topicCount: requestedCount });
+          result = await callAppsScriptBackend("suggestTopics", {
+            images,
+            topicCount: requestedCount,
+            apiKey: geminiApiKeyInput.value.trim()
+          });
         }
         if (result && Array.isArray(result.topics)) {
           result.topics = result.topics.map(normalizeAccents);
@@ -2293,7 +2300,7 @@ Prima di rispondere controlla internamente coerenza di contenuti, soluzioni, con
         generationGuide.hidden = false;
         return;
       }
-      if (localServerAvailable && !geminiApiKeyInput.value.trim()) {
+      if ((localServerAvailable || hybridBackendAvailable) && !geminiApiKeyInput.value.trim()) {
         generationStatus.textContent = "Inserisci la tua API key Gemini nel campo qui sopra.";
         geminiApiKeyInput.focus();
         return;
@@ -2337,7 +2344,12 @@ Prima di rispondere controlla internamente coerenza di contenuti, soluzioni, con
               .generateAssessment(images, config, level);
           });
         } else {
-          generated = await callAppsScriptBackend("generateAssessment", { images, config, level });
+          generated = await callAppsScriptBackend("generateAssessment", {
+            images,
+            config,
+            level,
+            apiKey: geminiApiKeyInput.value.trim()
+          });
         }
         generated = normalizeAssessmentContent(generated);
         const topics = validateGeneratedAssessment(generated, config, level);
@@ -3376,7 +3388,7 @@ ${solutionComment}    const ${item} = form.addGridItem().setTitle(${title})
         choicesShuffled: true,
         previewOrders: { questions: questionOrders, answers: answerOrders },
         questionsJson: questionsJson.value,
-        apiKey: geminiApiKeyInput.value,
+        apiKey: hybridBackendAvailable ? "" : geminiApiKeyInput.value,
         form: {
           title: formTitleInput.value,
           classes: formClassesInput.value,
@@ -3435,7 +3447,9 @@ ${solutionComment}    const ${item} = form.addGridItem().setTitle(${title})
         initializeQuestionCounts(project.configuration);
         renderMatrices();
 
-        geminiApiKeyInput.value = typeof project.apiKey === "string" ? project.apiKey : "";
+        geminiApiKeyInput.value = hybridBackendAvailable
+          ? ""
+          : typeof project.apiKey === "string" ? project.apiKey : "";
         formTitleInput.value = project.form && typeof project.form.title === "string" ? project.form.title : "";
         formClassesInput.value = project.form && typeof project.form.classes === "string" ? project.form.classes : "";
         formPasswordInput.value = project.form && typeof project.form.password === "string" ? project.form.password : "";

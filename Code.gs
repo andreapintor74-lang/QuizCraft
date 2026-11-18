@@ -18,9 +18,9 @@ function doPost(e) {
       throw new Error("Azione non valida.");
     }
     if (request.action === "suggestTopics") {
-      response.result = suggestTopics(request.images, request.topicCount);
+      response.result = suggestTopics(request.images, request.topicCount, requireUserApiKey_(request.apiKey));
     } else if (request.action === "generateAssessment") {
-      response.result = generateAssessment(request.images, request.config, request.level);
+      response.result = generateAssessment(request.images, request.config, request.level, requireUserApiKey_(request.apiKey));
     } else if (request.action === "createGoogleForm") {
       response.result = createGoogleForm(request.assessment);
     } else if (request.action === "getJsonPrompt") {
@@ -40,7 +40,14 @@ function getJsonPrompt() {
   return HtmlService.createHtmlOutputFromFile("prompt").getContent();
 }
 
-function suggestTopics(images, topicCount) {
+function requireUserApiKey_(apiKey) {
+  if (typeof apiKey !== "string" || !apiKey.trim()) {
+    throw new Error("Inserisci la tua API key Gemini.");
+  }
+  return apiKey.trim();
+}
+
+function suggestTopics(images, topicCount, apiKey) {
   if (!Number.isInteger(topicCount) || topicCount < 1 || topicCount > 100) {
     throw new Error("Il numero di argomenti deve essere compreso tra 1 e 100.");
   }
@@ -50,7 +57,7 @@ function suggestTopics(images, topicCount) {
     "Non aggiungere spiegazioni. Rispondi esclusivamente con JSON valido nella forma " +
     "{\"topics\":[\"Titolo 1\",\"Titolo 2\"]}, con esattamente " + topicCount +
     " titoli distinti, ciascuno lungo al massimo 120 caratteri.";
-  var suggestions = parseGeminiJson_(callGemini_(createGeminiInput_(images, instructions)), "titoli");
+  var suggestions = parseGeminiJson_(callGemini_(createGeminiInput_(images, instructions), apiKey), "titoli");
   if (!suggestions || !Array.isArray(suggestions.topics) ||
       suggestions.topics.length !== topicCount ||
       suggestions.topics.some(function(title) {
@@ -70,7 +77,7 @@ function suggestTopics(images, topicCount) {
   return { topics: normalizedTopics };
 }
 
-function generateAssessment(images, config, level) {
+function generateAssessment(images, config, level, apiKey) {
   validateGenerationConfig_(config);
   level = level || "both";
   var levels = level === "both" ? ["complete", "simplified"] : [level];
@@ -78,7 +85,7 @@ function generateAssessment(images, config, level) {
     throw new Error("Tipo di verifica non valido.");
   }
   var prompt = buildAssessmentPrompt_(config, level);
-  var generated = parseGeminiJson_(callGemini_(createGeminiInput_(images, prompt)), "verifiche");
+  var generated = parseGeminiJson_(callGemini_(createGeminiInput_(images, prompt), apiKey), "verifiche");
   if (!generated || !Array.isArray(generated.topics) ||
       generated.topics.length !== config.topicCount ||
       generated.topics.some(function(title) {
@@ -173,16 +180,19 @@ function createGeminiInput_(images, instructions) {
   return input;
 }
 
-function callGemini_(input) {
-  var apiKey = PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY");
-  if (!apiKey || !apiKey.trim()) {
-    throw new Error("Chiave Gemini non configurata. Aggiungi GEMINI_API_KEY nelle Proprietà dello script Apps Script.");
+function callGemini_(input, apiKey) {
+  var resolvedApiKey = typeof apiKey === "string" ? apiKey.trim() : "";
+  if (!resolvedApiKey) {
+    resolvedApiKey = (PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY") || "").trim();
+  }
+  if (!resolvedApiKey) {
+    throw new Error("Inserisci una API key Gemini valida.");
   }
   var response = UrlFetchApp.fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
     method: "post",
     contentType: "application/json",
     headers: {
-      "x-goog-api-key": apiKey.trim(),
+      "x-goog-api-key": resolvedApiKey,
       "Api-Revision": "2026-05-20"
     },
     payload: JSON.stringify({ model: "gemini-4-hydrogen", input: input }),
