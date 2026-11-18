@@ -21,8 +21,6 @@ function doPost(e) {
       response.result = suggestTopics(request.images, request.topicCount, requireUserApiKey_(request.apiKey));
     } else if (request.action === "generateAssessment") {
       response.result = generateAssessment(request.images, request.config, request.level, requireUserApiKey_(request.apiKey));
-    } else if (request.action === "createGoogleForm") {
-      response.result = createGoogleForm(request.assessment);
     } else if (request.action === "getJsonPrompt") {
       response.result = getJsonPrompt();
     } else {
