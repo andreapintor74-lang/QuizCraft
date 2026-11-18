@@ -1013,6 +1013,9 @@ Prima di rispondere controlla internamente coerenza di contenuti, soluzioni, con
     if (appsScriptAvailable) {
       document.querySelector("[data-help-link]").href = "?page=help";
     }
+    if (appsScriptAvailable || hybridBackendAvailable) {
+      document.querySelector(".gemini-key-field").hidden = true;
+    }
 
     const topicCount = document.querySelector("#topic-count");
     const cards = [...document.querySelectorAll(".card")];
