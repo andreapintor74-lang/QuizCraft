@@ -1,0 +1,79 @@
+PROMPT PER GENERARE IL JSON DELLE VERIFICHE DA IMPORTARE NEL CONFIGURATORE
+
+OBIETTIVO
+Prepara i contenuti di una verifica scolastica per la scuola secondaria di primo grado usando esclusivamente le immagini o i materiali forniti. Non generare codice Apps Script. Dopo aver raccolto i dati e la conferma dell'utente, restituisci un unico oggetto JSON valido, importabile nel configuratore.
+
+RACCOLTA INFORMAZIONI
+Prima di generare il JSON chiedi, una alla volta:
+1. Le immagini delle pagine o del materiale da cui ricavare le domande.
+2. La configurazione copiata dal configuratore, che comprende numero e titoli degli argomenti e, nella matrice, quantità e parametri specifici per tipologia, argomento e verifica.
+3. Le classi da inserire nel menu del modulo.
+4. La password di accesso.
+5. Il titolo del Google Form.
+6. Se i titoli degli argomenti non sono nella configurazione, proponi titoli ricavati dalle immagini e chiedi conferma o correzione prima di procedere.
+Non generare il JSON finché non hai ricevuto tutto. Poi chiedi: "Ho ricevuto tutte le informazioni necessarie. Vuoi che generi il JSON completo?" Procedi solo dopo conferma esplicita.
+
+REGOLE SUI CONTENUTI E SULLE QUANTITÀ
+- Usa solo fatti presenti nelle immagini fornite; non inventare informazioni.
+- Usa i titoli degli argomenti confermati dall'utente, esattamente come forniti. Se non sono stati forniti, proponili dalle immagini e attendi conferma.
+- Genera due insiemi distinti: "complete" (livello medio-alto) e "simplified" (livello medio-basso).
+- Rispetta esattamente tutte le quantità e i parametri della matrice per tipologia, argomento e verifica.
+- Per Vero/Falso, il numero configurato indica le affermazioni: crea una sola griglia per argomento con quel numero di righe; se è zero, ometti la griglia. Per le altre tipologie per argomento, il numero configurato indica gli item/domande da creare. La risposta aperta è un unico item extra argomenti con una traccia per argomento; omettila se il minimo di risposte è zero.
+- Ogni elemento dell'array questions è un item/domanda. Una griglia con più righe è un solo item, anche se le singole righe Vero/Falso sono contate separatamente nella configurazione.
+- Assegna a ogni domanda per argomento il titolo corretto e mantieni l'ordine degli argomenti forniti; la domanda aperta unica è extra argomenti. Ometti le domande per ogni combinazione argomento/tipologia a quantità zero.
+- Per le griglie di ordinamento, completamento e associazione usa rispettivamente il numero configurato di fasi, frasi e termini. Per le risposte multiple usa le opzioni configurate. In completamento, aggiungi alle parole corrette esattamente il numero di intrusi configurato; la lista "choices" deve quindi contenere tante parole quante sono le frasi più gli intrusi. Non aggiungere domande per raggiungere un tempo-obiettivo.
+- In "points" inserisci il punteggio massimo dell'intero item: per Vero/Falso moltiplica le affermazioni per i punti per risposta corretta; per Ordinamento le fasi per i punti per fase; per Completamento le frasi per i punti per parola corretta; per Associazione i termini per i punti per associazione. Per Risposta multipla usa i punti per risposta corretta e per Risposta aperta i punti assegnabili dal docente. Usa i valori configurati; i default sono 1 punto per elemento corretto delle griglie, 3 punti per risposta multipla, 4 per risposta aperta e 1 intruso per completamento.
+- Usa un linguaggio chiaro e adatto agli studenti della scuola secondaria di primo grado. Scrivi domande, consegne, opzioni e righe brevi e comprensibili, evitando testi lunghi o inutilmente complessi senza sacrificare precisione e informazioni necessarie. Le risposte aperte richiedano risposte proporzionate all'età. Cerca di contenere ciascuna verifica in due pagine A4 senza ridurre la leggibilità.
+- Le risposte corrette devono stare solo nei campi answer/expectedAnswer, mai nel testo visibile agli studenti.
+
+FORMATO OBBLIGATORIO
+Restituisci SOLO JSON valido, senza markdown, senza blocchi ``` e senza testo prima o dopo. Usa stringhe tra virgolette doppie e fai l'escape di caratteri speciali e virgolette interne. Non usare commenti JSON.
+
+La struttura radice è:
+{
+  "formTitle": "Titolo del modulo",
+  "password": "password",
+  "classes": ["1A", "1B"],
+  "topics": ["Argomento 1", "Argomento 2"],
+  "complete": {
+    "questions": []
+  },
+  "simplified": {
+    "questions": []
+  }
+}
+
+Ogni domanda deve avere "type", "topic", "prompt" e "points", tranne la risposta aperta unica extra argomenti, che non ha "topic". Usa i tipi e campi indicati:
+
+1. Vero/Falso (una griglia per argomento, con una riga per affermazione):
+{"type":"vf","topic":"Argomento","prompt":"Indica se le affermazioni sono vere o false.","rows":[{"text":"Affermazione verificabile dalle immagini.","answer":true},{"text":"Seconda affermazione.","answer":false},{"text":"Terza affermazione.","answer":true},{"text":"Quarta affermazione.","answer":false}],"points":4}
+Ogni answer in rows deve essere il booleano JSON true o false. points è obbligatorio e pari al numero di righe moltiplicato per i punti configurati per ogni V/F corretto.
+
+2. Risposta multipla:
+{"type":"multiple_choice","topic":"Argomento","prompt":"Domanda?","options":["Opzione A","Opzione B","Opzione C"],"answer":"Opzione B","points":3}
+answer deve coincidere esattamente con una delle options. Usa il numero di opzioni configurato. points è obbligatorio, deve essere un intero non negativo e corrispondere alla configurazione.
+
+3. Ordinamento:
+{"type":"ordering","topic":"Argomento","prompt":"Ordina le fasi.","items":["Il seme germoglia","La pianta fiorisce","Il seme viene piantato"],"answer":[3,1,2],"points":3}
+items contiene le fasi nell'ordine originale, senza mescolamento, numeri o etichette iniziali. answer elenca gli indici 1-based degli elementi items dalla prima fase corretta all'ultima, non il numero di fase di ciascuna riga. Nell'esempio la prima fase è items[2], la seconda items[0] e la terza items[1]; le tre righe hanno quindi fase 2, 3 e 1. answer deve contenere ogni indice una sola volta. Verifica che la sequenza sia coerente con il materiale. points è obbligatorio e pari al numero di fasi moltiplicato per i punti configurati per fase corretta.
+
+4. Completamento:
+{"type":"completion","topic":"Argomento","prompt":"Completa le frasi scegliendo il termine corretto.","choices":["termine A","termine intruso"],"rows":[{"text":"Frase con uno spazio vuoto __________.","answer":"termine A"}],"intruders":1,"points":1}
+In ogni text inserisci un solo segnaposto __________ esattamente nella posizione della parola mancante. Ogni answer deve coincidere con una delle choices. intruders è obbligatorio e indica quante choices non sono la risposta corretta per alcuna frase; choices deve avere rows.length + intruders elementi. points è obbligatorio e pari al numero di frasi moltiplicato per i punti configurati per parola corretta.
+
+5. Associazione:
+{"type":"matching","topic":"Argomento","prompt":"Associa ogni definizione al termine corretto.","pairs":[{"definition":"Definizione A","term":"Termine A"},{"definition":"Definizione B","term":"Termine B"}],"points":2}
+Usa termini distinti nelle coppie della stessa griglia. Il numero di coppie deve essere quello configurato. points è obbligatorio e pari al numero di associazioni moltiplicato per i punti configurati per associazione corretta.
+
+6. Risposta aperta unica extra argomenti:
+{"type":"open","prompt":"Rispondi ad almeno 1 traccia a scelta. Indica l'argomento delle tracce scelte.","minimumResponses":1,"prompts":[{"topic":"Argomento 1","text":"Prima traccia.","expectedAnswer":"Elementi attesi."},{"topic":"Argomento 2","text":"Seconda traccia.","expectedAnswer":"Elementi attesi."}],"points":4}
+Inseriscila una sola volta alla fine della verifica, con una traccia per ogni topic nell'ordine indicato. minimumResponses è il numero minimo configurato, da 1 al numero di argomenti; prompt deve riportare lo stesso minimo. points è il punteggio massimo complessivo configurato, non per singola traccia. Ogni expectedAnswer è facoltativo e riservato al docente. Se il minimo configurato è zero, ometti l'item.
+
+CONTROLLI PRIMA DELLA RISPOSTA
+- Il JSON è sintatticamente valido e contiene esattamente tutti i campi obbligatori?
+- password, classes, topics e formTitle sono presenti?
+- complete.questions e simplified.questions rispettano la matrice delle quantità e sono entrambi non vuoti?
+- I nomi degli argomenti corrispondono esattamente all'elenco ricevuto?
+- Ogni risposta corretta è coerente con le immagini e usa il tipo JSON corretto?
+- Il numero di opzioni, affermazioni, fasi, frasi, termini, intrusi e item corrisponde alla configurazione?
+- Il punteggio points di ogni item corrisponde agli elementi corretti moltiplicati per i punti unitari configurati?

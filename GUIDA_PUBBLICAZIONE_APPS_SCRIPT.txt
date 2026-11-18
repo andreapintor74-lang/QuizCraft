@@ -1,0 +1,70 @@
+CONFIGURATORE VERIFICHE — USO LOCALE O WEB APP CON GEMINI
+
+USO LOCALE (SENZA PUBBLICARE UNA WEB APP)
+
+1. Fai doppio clic su `AvviaConfiguratoreLocale.bat`. Si aprirà il configuratore all'indirizzo http://127.0.0.1:8765/.
+2. Nel campo API key Gemini incolla la tua chiave, seleziona le immagini, imposta gli argomenti e la matrice delle due verifiche, quindi genera separatamente la verifica completa o quella semplificata.
+3. La chiave non viene salvata: resta nella pagina aperta e viene inoltrata dal server locale a Gemini. Chi può accedere al browser potrebbe ispezionarla. Il server accetta connessioni solo da questo computer; chiudi la finestra PowerShell per arrestarlo.
+
+Non aprire `index.html` direttamente: il browser non consente a una pagina `file://` di chiamare il server locale. Usa sempre il file di avvio. Il server usa PowerShell incluso in Windows e non richiede pacchetti aggiuntivi.
+
+SALVATAGGIO E CARICAMENTO DEI PROGETTI
+
+"Salva progetto nel browser" conserva un solo progetto nello stesso browser e indirizzo, incluso chiave API e password senza cifratura; viene ripristinato all'avvio.
+"Scarica progetto" crea un file JSON portabile con immagini, impostazioni, verifiche e soluzioni, ma senza chiave API e password del Form. Conserva il file con attenzione perché contiene comunque il materiale e le soluzioni. Eventuali bozze nel campo JSON non ancora importate non sono incluse: importale prima di scaricare il progetto.
+"Carica progetto da file" ripristina un file scaricato dall'app, previa conferma; reinserisci chiave API e password se necessarie. Il caricamento non sostituisce il progetto salvato nel browser: per ripristinare quello caricato al prossimo avvio premi "Salva progetto nel browser". Il file può essere al massimo di 32 MB.
+
+USO COME WEB APP GOOGLE APPS SCRIPT
+
+I file Code.gs, index.html e appsscript.json permettono anche di usare il configuratore come Web App Google Apps Script. In questa modalità la chiave viene letta dalle Proprietà dello script, quindi non occorre inserirla nell'interfaccia. La funzione di creazione del modulo opera con l'account Google che apre l'app e autorizza l'accesso a Google Forms.
+
+1. Vai su https://script.google.com e crea un nuovo progetto.
+2. Sostituisci il contenuto di Code.gs con il file Code.gs presente in questa cartella.
+3. Crea un file HTML chiamato index e incolla il contenuto di index.html.
+4. Crea un file HTML chiamato prompt e incolla il contenuto di prompt.html.
+5. Nelle impostazioni del progetto abilita la visualizzazione del file manifest e sostituisci appsscript.json con il file incluso.
+6. Salva il progetto, scegli Distribuisci > Nuova distribuzione > App web.
+7. Crea/gestisci la chiave API da https://aistudio.google.com/app/apikey. Nel progetto Apps Script apri Impostazioni progetto > Proprietà script e aggiungi la proprietà `GEMINI_API_KEY` con quella chiave. Non inserirla in Code.gs, HTML, prompt o file pubblici.
+8. Esegui l'app come utente che accede e limita l'accesso al tuo account (manifest: USER_ACCESSING / MYSELF).
+9. Distribuisci la Web App e autorizza gli scope Google Forms e richieste esterne. Se l'app era già distribuita, crea una nuova versione della distribuzione.
+
+FLUSSO D'USO
+
+Il pulsante "Copia prompt generico per IA", accanto al titolo, è disponibile anche senza generare verifiche o caricare immagini. Incolla il prompt in un'altra IA capace di leggere immagini e allega lì il materiale: il prompt guida la raccolta dei parametri e la creazione di uno script FormApp. Non contiene dati, immagini, verifiche, password o chiavi dell'app. Se la copia automatica non è disponibile, il testo viene selezionato per copiarlo con Ctrl+C. La password va impostata come proprietà FORM_PASSWORD nello script generato, non comunicata all'IA.
+Il prompt generico incorporato in index.html e il prompt alternativo PROMPT_PER_LA_GENERAZIONE_VERIFICHE_generico.txt devono essere aggiornati quando cambiano le regole generali delle verifiche o dello script, mantenendoli coerenti; non includere dati di uno specifico progetto.
+
+1. In locale apri l'indirizzo avviato da `AvviaConfiguratoreLocale.bat`; come Web App apri l'URL Apps Script. Seleziona le immagini del libro e imposta il numero di argomenti. Non c’è un limite al numero di immagini; ciascuna può avere dimensione massima di 4 MB e il totale non deve superare 12 MB.
+2. Usa Suggerisci titoli argomenti per ricavare i titoli dalle immagini, oppure lascia i titoli predefiniti: Gemini li dedurrà quando genererà le verifiche. I titoli suggeriti possono essere modificati.
+3. Nelle matrici configura, per ogni argomento e tipologia, quantità, dimensioni e punti unitari per entrambe le versioni. Il numero V/F indica le affermazioni raccolte in una griglia per argomento; per completamento il default è un intruso per domanda. I valori iniziali dei punti seguono il prompt: 1 punto per elemento corretto delle griglie, 3 per risposta multipla e 4 per risposta aperta.
+   Nella riga extra argomenti imposta il numero minimo di tracce aperte da svolgere (0 esclude la domanda) e il punteggio massimo complessivo. La domanda unica comprende una traccia per argomento in elenco puntato; lo studente sceglie almeno il numero richiesto. Nel Google Form una sola casella è obbligatoria: il docente deve verificare manualmente il numero di tracce svolte. I progetti creati in versioni precedenti conservano le domande aperte già salvate; la nuova struttura si applica alla nuova generazione.
+   Ogni cella mostra una stima indicativa in minuti; il riepilogo mostra il totale della versione. La stima è orientativa, non una durata misurata: non include avvio o revisione e va adattata alla classe e alla difficoltà. I tempi base sono 30 secondi per affermazione V/F; 60 secondi per risposta multipla più 10 per ogni opzione oltre la terza; per ogni ordinamento 30 secondi più 20 per fase; per ogni completamento 30 secondi più 30 per frase e 5 per intruso; per ogni associazione 30 secondi più 25 per termine; 180 secondi per ciascuna traccia aperta richiesta. A tutti questi tempi viene aggiunto il 20%. I valori mostrati sono arrotondati a un decimo di minuto, mentre il totale è calcolato prima dell'arrotondamento.
+4. Premi Genera verifica completa o Genera verifica semplificata. Ogni pulsante invia a Gemini le immagini e la configurazione numerica della sola versione selezionata; i dati del Google Form (classi e password) non vengono inviati. L'app controlla che quantità, dimensioni e punteggi corrispondano alla matrice. Puoi generare le versioni in momenti diversi; quando sono entrambe pronte, l'anteprima le mostra prima completa e poi semplificata.
+   Il pulsante della versione pronta diventa verde. I comandi per stampa e modifica diventano verdi quando almeno una versione è pronta; quelli per creare il Form o copiare script e prompt richiedono entrambe le versioni.
+5. Se vuoi creare un Google Form, apri Dati Google Form e inserisci titolo, classi e password. Questi dati sono richiesti solo per il Form; la stampa e l'esportazione non li richiedono. Puoi inoltre usare il flusso JSON manuale nella sezione Importa le domande, se necessario.
+6. Usa il pulsante flottante Modifica domande per correggere testi e risposte nell'anteprima. Mostra le risposte corrette per la revisione docente.
+   Le verifiche vengono mantenute nell'ordine generato o importato. I pulsanti nell'anteprima mischiano separatamente le domande all'interno di ciascun argomento e le risposte, fasi e associazioni; premendoli di nuovo ripristinano l'ordine originale. Il progetto salva anche l'ordine visualizzato e PDF e Word riproducono l'anteprima.
+   Nell'ordine originale, fasi e associazioni possono rendere evidenti le soluzioni: controlla l'anteprima prima di distribuire le verifiche e il modulo prima di pubblicarlo.
+7. Stampa o salva in PDF dal browser, scarica la versione Word oppure conferma la creazione del Google Form. Il modulo viene creato come bozza non pubblicata; controllalo e pubblicalo da Google Forms quando sei pronto.
+8. Per chiedere a un'altra IA uno script Google Apps Script, genera entrambe le verifiche e premi "Copia prompt per un'altra IA". Il prompt include le verifiche, le soluzioni e le eventuali classi, ma non la password del modulo né la chiave API. Controlla i dati prima di condividerli; la password va impostata separatamente come proprietà FORM_PASSWORD nello script generato.
+
+Il pulsante "Copia script Google" produce uno script pronto per creare un solo modulo, con entrambi i percorsi. Richiede classi e password del Form; se il titolo è vuoto viene usato quello predefinito. Quando è grigio, premilo per vedere cosa manca; diventa verde quando i requisiti sono soddisfatti. Lo script usa FormApp e non richiede Google Forms API o l'accesso completo a Drive. Se la copia automatica non funziona, seleziona il testo e premi Ctrl+C. Lo script contiene la password, quindi non condividerlo. Incollalo in Apps Script ed esegui la funzione main una sola volta. Ogni nuova esecuzione crea un altro modulo; se l'esecuzione fallisce dopo la creazione, può rimanere un modulo incompleto da controllare nel proprio Google Drive.
+
+Nel modulo, classe e livello della verifica si selezionano da menu a discesa. I punti accanto al livello sono massimi teorici: includono anche le griglie da correggere manualmente. Ciascun percorso termina con l'invio, senza una sezione finale aggiuntiva. Per verificare l'aspetto dei menu e i percorsi usa l'anteprima per i compilatori di Google Forms.
+
+Il Form viene impostato come quiz, senza raccolta email, modifica delle risposte, limite a una risposta, barra di avanzamento o riepilogo pubblico dei risultati. Le domande sono obbligatorie, il mescolamento automatico delle domande è disattivato ed è disponibile il link per inviare un'altra risposta.
+Controlla manualmente in Google Forms le impostazioni non esposte da FormApp: pubblicazione immediata dei voti, visibilità di domande errate, risposte corrette e punti, salvataggio automatico e valori predefiniti di account e domande. Lo script imposta le singole domande create come obbligatorie, ma non cambia il valore predefinito delle domande future.
+
+ORDINE CASUALE NEL MODULO
+Il Form viene creato nell'ordine originale delle verifiche, indipendentemente dai pulsanti dell'anteprima: domande, opzioni, righe e termini non vengono mescolati. Per un ordine diverso per ogni studente, abilita manualmente il mescolamento delle domande e quello delle opzioni in Google Forms, dove disponibile. Il mescolamento delle domande in Google Forms si applica all'intera pagina, anche ai dati alunno, non separatamente per argomento. Le griglie richiedono correzione manuale.
+I progetti salvati con versioni precedenti possono contenere opzioni già mescolate: l'ordine originario precedente non è recuperabile dal file. L'ordine salvato diventa la base reversibile del progetto caricato.
+Se riutilizzi un progetto Apps Script con un manifest che elenca esplicitamente scope Drive aggiunti in precedenza, tali autorizzazioni possono continuare a essere richieste: rimuovile dal manifest se non servono ad altre funzioni, oppure usa un nuovo progetto dedicato. Le autorizzazioni già concesse non vengono revocate automaticamente.
+
+Le immagini sono inviate a Gemini solo quando premi Suggerisci titoli argomenti o uno dei pulsanti di generazione delle verifiche. Nella modalità locale il server PowerShell le inoltra usando la chiave inserita nella pagina; nella modalità Apps Script vengono inoltrate con la chiave custodita nelle Proprietà dello script. L'app non salva le immagini. L'uso dell'API Gemini può essere soggetto a limiti e costi del tuo account Google.
+
+Il limite di due pagine A4 è verificato prima dell'esportazione e della creazione del Form. Se il contenuto non entra, l'app segnala le domande eccedenti: riduci il testo o il numero di domande e riprova.
+
+Il file Word esportato è un .doc basato su HTML, apribile con Microsoft Word; non è un .docx nativo. Per ottenere un .docx, apri il .doc in Word e usa Salva con nome.
+
+Le griglie Vero/Falso, Ordinamento, Completamento e Associazione vengono create come griglie Google Forms. Google Forms non consente di impostare direttamente le risposte corrette/punteggi per questi tipi di griglia tramite FormApp; i punti configurati sono teorici, calcolati per riga/fase/parola/associazione, e le griglie richiedono correzione manuale. Le soluzioni restano disponibili nell'anteprima docente. Le domande a risposta multipla sono configurate come risposte corrette del Quiz.
+
+Negli ordinamenti, answer elenca gli indici delle righe dalla prima fase all'ultima. L'anteprima converte questa sequenza nel numero di fase di ciascuna riga; lo script copiato riporta la sequenza corretta in un commento riservato al docente, non visibile nel modulo. Controlla sempre che la sequenza proposta da Gemini sia coerente con il materiale originale.

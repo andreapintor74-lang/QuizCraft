@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guida a QuizCraft</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+      color: #1a2332;
+      background: #eef2f9;
+      --blue: #0066cc;
+      --purple: #7c3aed;
+      --muted: #64748b;
+      --border: #d4dce6;
+      --surface: #fff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px 18px 56px;
+      background: linear-gradient(135deg, #f5f7fb 0%, #eef2f9 100%);
+    }
+
+    .page { width: min(1000px, 100%); margin: 0 auto; }
+
+    .hero, .card {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      box-shadow: 0 4px 18px rgba(0, 61, 153, .09);
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 22px;
+      padding: 28px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(0, 102, 204, .1), rgba(124, 58, 237, .1)), #fff;
+    }
+
+    .hero::after {
+      content: "?";
+      position: absolute;
+      right: 28px;
+      top: -26px;
+      color: rgba(0, 102, 204, .08);
+      font-size: 10rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    h1 {
+      position: relative;
+      z-index: 1;
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: clamp(1.8rem, 5vw, 2.7rem);
+    }
+
+    .hero p {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 0 18px;
+      color: #52627a;
+      line-height: 1.6;
+    }
+
+    .back-link {
+      position: relative;
+      z-index: 1;
+      display: inline-block;
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue), #003d99);
+      color: #fff;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0, 102, 204, .28);
+    }
+
+    .back-link:hover { transform: translateY(-1px); }
+    .back-link:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid rgba(0, 102, 204, .4); outline-offset: 3px; }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 0 0 22px;
+    }
+
+    .nav a {
+      padding: 8px 12px;
+      border: 1px solid #b9cce5;
+      border-radius: 999px;
+      background: #fff;
+      color: var(--blue);
+      font-size: .9rem;
+      font-weight: 650;
+      text-decoration: none;
+    }
+
+    .nav a:hover { background: #edf5ff; }
+
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+
+    .card { padding: 22px; border-radius: 16px; }
+    .card.wide { grid-column: 1 / -1; }
+
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 12px;
+      color: var(--blue);
+      font-size: 1.25rem;
+    }
+
+    .number {
+      display: inline-grid;
+      flex: 0 0 30px;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: #fff;
+      font-size: .9rem;
+    }
+
+    h3 { margin: 18px 0 7px; color: #334155; font-size: 1rem; }
+    p, li { line-height: 1.6; }
+    p { margin: 0 0 10px; color: #52627a; }
+    ul, ol { margin: 8px 0 0; padding-left: 22px; }
+    li + li { margin-top: 7px; }
+
+    .note, .warning {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      line-height: 1.5;
+    }
+
+    .note { border: 1px solid #bfd5f4; background: #eff6ff; color: #174a7e; }
+    .warning { border: 1px solid #e9c66b; background: #fff9e8; color: #75540d; }
+
+    details { border-top: 1px solid #e2e8f0; }
+    details:first-of-type { margin-top: 10px; }
+    summary { padding: 14px 0; color: #1e3a5f; font-weight: 700; cursor: pointer; }
+    details p { padding-bottom: 6px; }
+
+    .footer {
+      margin-top: 22px;
+      text-align: center;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    @media (max-width: 720px) {
+      body { padding: 14px 12px 40px; }
+      .hero, .card { padding: 18px; }
+      .grid { grid-template-columns: 1fr; }
+      .card.wide { grid-column: auto; }
+      .hero::after { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <h1>Guida a QuizCraft</h1>
+      <p>QuizCraft trasforma immagini di materiale didattico in verifiche configurabili. Puoi creare una versione completa e una semplificata, controllare l’anteprima e, quando tutto è corretto, esportare o pubblicare il risultato come Google Form.</p>
+      <a class="back-link" href="index.html">← Torna al configuratore</a>
+    </header>
+
+    <nav class="nav" aria-label="Sezioni della guida">
+      <a href="#percorso">Procedura</a>
+      <a href="#materiale">Materiale e argomenti</a>
+      <a href="#matrice">Configurazione</a>
+      <a href="#risultati">Anteprima ed export</a>
+      <a href="#progetti">Salvataggio</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#faq">Domande frequenti</a>
+    </nav>
+
+    <div class="grid">
+      <section id="percorso" class="card wide">
+        <h2><span class="number">1</span> Il percorso consigliato</h2>
+        <ol>
+          <li><strong>Carica le immagini</strong> del libro o del materiale didattico.</li>
+          <li><strong>Definisci gli argomenti</strong>, inserendoli manualmente o chiedendo a Gemini di suggerire i titoli.</li>
+          <li><strong>Configura le due matrici</strong> per la verifica completa e quella semplificata: quantità, struttura e punteggi.</li>
+          <li><strong>Genera le versioni</strong> separatamente o entrambe con i rispettivi pulsanti.</li>
+          <li><strong>Controlla l’anteprima</strong>, modifica eventuali domande e verifica le risposte corrette.</li>
+          <li><strong>Esporta o crea il Google Form</strong> solo dopo il controllo finale.</li>
+        </ol>
+        <div class="note">La generazione richiede immagini leggibili. QuizCraft usa esclusivamente il contenuto del materiale, ma il docente deve comunque verificare accuratezza, adeguatezza e soluzioni.</div>
+      </section>
+
+      <section id="materiale" class="card">
+        <h2><span class="number">2</span> Materiale e argomenti</h2>
+        <h3>Immagini</h3>
+        <p>Trascina o seleziona file JPG, PNG o WebP. Ogni immagine può pesare al massimo 4 MB, per un totale massimo di 12 MB. Puoi riordinare le anteprime trascinandole oppure rimuoverle singolarmente.</p>
+        <h3>Titoli</h3>
+        <p>Imposta il numero di argomenti e i relativi titoli. Il pulsante “Suggerisci titoli argomenti” analizza le immagini; se non lo usi, puoi inserire o modificare direttamente ogni titolo.</p>
+      </section>
+
+      <section id="matrice" class="card">
+        <h2><span class="number">3</span> Configurazione delle verifiche</h2>
+        <p>Le matrici permettono di impostare, per ogni argomento e per ogni tipologia:</p>
+        <ul>
+          <li><strong>Vero/Falso</strong>: numero di affermazioni e punti per affermazione.</li>
+          <li><strong>Risposta multipla</strong>: numero di domande, opzioni e punti.</li>
+          <li><strong>Ordinamento</strong>: numero di griglie, fasi e punti per fase.</li>
+          <li><strong>Completamento</strong>: griglie, frasi, intrusi e punti per parola.</li>
+          <li><strong>Associazione</strong>: griglie, coppie e punti per associazione.</li>
+          <li><strong>Risposta aperta</strong>: numero minimo di tracce richieste e punteggio massimo totale.</li>
+        </ul>
+        <p>Con i pulsanti ↺ puoi azzerare una colonna; con “Copia parametri dalla verifica completa” replichi tutti i valori nella semplificata.</p>
+        <div class="warning">Per il Vero/Falso il numero configurato indica le singole affermazioni, anche se nel Form vengono raggruppate in una sola griglia.</div>
+      </section>
+
+      <section id="risultati" class="card wide">
+        <h2><span class="number">4</span> Anteprima, controllo ed esportazione</h2>
+        <div class="grid">
+          <div>
+            <h3>Anteprima</h3>
+            <p>Le versioni complete e semplificate sono impaginate separatamente. Puoi modificare i testi, mostrare le risposte corrette e mescolare domande, opzioni o fasi per verificare l’aspetto finale.</p>
+          </div>
+          <div>
+            <h3>Documento</h3>
+            <p>Usa “Stampa / salva PDF” per stampare o creare un PDF dal browser. “Scarica Word (.doc)” produce un documento modificabile. Le soluzioni possono essere visualizzate prima dell’esportazione.</p>
+          </div>
+          <div>
+            <h3>Google Forms</h3>
+            <p>Compila titolo, classi e password nella sezione dei dati. Il pulsante “Conferma e crea Google Form” crea un quiz con percorso completo e semplificato, password, classi e punteggi automatici dove supportati.</p>
+          </div>
+          <div>
+            <h3>Correzione manuale</h3>
+            <p>Le griglie Vero/Falso, ordinamento, completamento e associazione non possono essere corrette automaticamente da Google Forms; anche la risposta aperta richiede valutazione del docente.</p>
+          </div>
+        </div>
+        <div class="warning">Controlla sempre l’anteprima prima di distribuire la verifica. L’ordine originale di fasi o associazioni può suggerire alcune risposte.</div>
+      </section>
+
+      <section id="progetti" class="card">
+        <h2><span class="number">5</span> Progetti e recupero</h2>
+        <p>La configurazione numerica si salva automaticamente nello stesso browser. Per conservare anche immagini, contenuti generati e chiave API locale usa “Salva progetto nel browser”.</p>
+        <p>“Scarica progetto” crea un file JSON da conservare e successivamente riaprire con “Carica progetto da file”. È utile per trasferire il lavoro su un altro computer o tenerne una copia esterna.</p>
+        <div class="note">Il progetto può contenere anche le risposte corrette. Conservalo come materiale riservato del docente.</div>
+      </section>
+
+      <section id="privacy" class="card">
+        <h2><span class="number">6</span> Privacy e dati</h2>
+        <p>Le immagini non vengono conservate dall’app. Sono inviate a Gemini soltanto quando chiedi i titoli o generi una verifica. “Salva progetto” può conservarle nel browser locale.</p>
+        <p>Nella Web App pubblicata su Apps Script la chiave API è gestita nelle proprietà dello script. Nel configuratore locale la chiave può essere inserita nell’app e salvata nel browser solo se scegli di conservare il progetto.</p>
+        <div class="warning">Una chiave salvata nel browser non è cifrata: chi ha accesso al profilo del browser potrebbe leggerla. Non condividere progetti, prompt o script che contengono credenziali.</div>
+      </section>
+
+      <section id="faq" class="card wide">
+        <h2><span class="number">7</span> Domande frequenti</h2>
+        <details>
+          <summary>Posso usare QuizCraft senza immagini?</summary>
+          <p>La generazione automatica è basata sulle immagini. Puoi usare un altro percorso incollando domande in JSON tramite le funzioni di importazione, se disponibili nel tuo ambiente, oppure preparare materiale leggibile da fotografare o acquisire.</p>
+        </details>
+        <details>
+          <summary>Perché alcune quantità sono diverse dal numero di item?</summary>
+          <p>Le singole affermazioni Vero/Falso sono raggruppate in un’unica griglia. Analogamente, le fasi, le frasi e le associazioni appartengono a griglie che Google Forms considera item singoli.</p>
+        </details>
+        <details>
+          <summary>Come riduco la lunghezza della verifica?</summary>
+          <p>Diminuisci il numero di item, opzioni, fasi o frasi nelle matrici. Il riepilogo mostra item totali, punteggio massimo e tempo stimato. Il tempo include un margine del 20% ed è solo indicativo.</p>
+        </details>
+        <details>
+          <summary>Posso modificare le domande dopo la generazione?</summary>
+          <p>Sì. Usa “Modifica domande” nell’anteprima, controlla i testi modificati e genera nuovamente l’output quando necessario.</p>
+        </details>
+        <details>
+          <summary>Cosa devo controllare prima di creare il Google Form?</summary>
+          <p>Controlla contenuti, soluzioni, punteggi, titoli degli argomenti, dati delle classi, password, eventuale uso delle risposte aperte e ordine di ogni griglia. Poi verifica il modulo anche direttamente in Google Forms prima di pubblicarlo agli studenti.</p>
+        </details>
+      </section>
+    </div>
+
+    <p class="footer">QuizCraft supporta il lavoro docente: il controllo finale dei contenuti resta sempre a cura del docente.</p>
+  </main>
+  <script>
+    if (window.google && google.script && google.script.run) {
+      document.querySelector(".back-link").href = "?page=index";
+    }
+  </script>
+</body>
+</html>
