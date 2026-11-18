@@ -16,8 +16,8 @@ Su Windows, avvia `AvviaConfiguratoreLocale.bat` e apri l'indirizzo mostrato dal
 
 I file `index.html`, `help.html`, `logo.png` e i file di supporto possono essere pubblicati dalla cartella principale del branch `main` tramite GitHub Pages.
 
-Il backend è configurato in `Code.gs` e viene distribuito come Web App Apps Script. La proprietà dello script `GEMINI_API_KEY` deve essere impostata nell'editor Apps Script, mai nel repository.
+Il backend è configurato in `Code.gs` e viene distribuito come Web App Apps Script. Su GitHub Pages ogni visitatore usa temporaneamente la propria chiave Gemini; la chiave non viene salvata dal backend né inclusa nel repository.
 
 ## Sicurezza e quota
 
-Il backend è raggiungibile pubblicamente per consentire le richieste da GitHub Pages. Il sito non contiene la chiave Gemini, ma le richieste riuscite consumano la quota dell'account proprietario del backend. Non pubblicare credenziali, password o progetti contenenti dati personali.
+Il backend è raggiungibile pubblicamente per consentire le richieste da GitHub Pages. Le richieste Gemini consumano la quota dell'utente che inserisce la chiave. I Google Form vanno creati nel proprio account tramite lo script generato dall'interfaccia. Non pubblicare credenziali, password o progetti contenenti dati personali.
